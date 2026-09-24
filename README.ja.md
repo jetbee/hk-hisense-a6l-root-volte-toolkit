@@ -56,7 +56,7 @@ Snapdragon 660 (SDM660) 搭載で、前面が通常のカラーLCD、背面が�
 
 **順調に進む場合でも、最初の1回だけはEDLを使います**——何もアンロックしていない時点ではrootもなくブートローダーもロックされたままなので、上の免責事項で推奨している通り純正の`boot`/`vbmeta`/`system`/モデムパーティションをバックアップするには、実質EDLでの生読み出し以外に現実的な方法がありません。この最初のバックアップさえ取ってしまえば、この節の残りは純粋に、何か失敗した時（書き込みミス、ブートループ等）の保険です——アンロック手順自体（すべて素の`fastboot`のみ）はその後二度とEDLに触れません。
 
-Emergency Download Mode (EDL)への突入には、通常は端末内部のテストポイントをショートさせる必要があります（分解が必要）。**「deep flash cable」「EDLケーブル」「test point cable」**などで検索してみてください——Snapdragon端末向けに、余ったピンに抵抗を仕込んで接続するだけでEDLに強制突入させるUSBケーブルが売られています。安価で、まさにこの用途のために広く流通しているので、必要になってからではなく始める前に買っておく価値があります。
+Emergency Download Mode (EDL)への突入には、通常は端末内部のテストポイントをショートさせる必要があります（分解が必要）。**「deep flash cable」「EDLケーブル」「test point cable」**などで検索してみてください——Snapdragon端末向けに、余ったピンに抵抗を仕込んで接続するだけでEDLに強制突入させるUSBケーブルが売られています。安価で、まさにこの用途のために広く流通しているので、必要になってからではなく始める前に買っておく価値があります。実際に使ったもの: [zmart Xiaomi Deep Flash Cable「Open Port 9008」「Phone Model Free」](https://www.amazon.co.jp/dp/B06XYP1J7N) ——Xiaomi向けとして売られていますが、中身は汎用のSnapdragonトリガーケーブルで、このHisense端末でも問題なく使えました。
 
 この端末でこのケーブルを使う場合、確実に成功する突入手順:
 
@@ -182,6 +182,7 @@ Windows側で`Diagnostics Interface (COMx)`というデバイスが列挙され�
 **書き込みツール:**
 - [`aimindseye/hisense-a9`](https://github.com/aimindseye/hisense-a9) — `Hisense`というOEMサブコマンドを実際に認識するパッチ済み`fastboot`バイナリの入手元（[アンロック手順](#アンロック手順)参照）。別のHisense機種向けだが、このバイナリ自体は機種固有ではなくOEM固有のもの。
 - [`bkerler/edl`](https://github.com/bkerler/edl) — EDLで実際に動いた汎用SDM660用Firehoseローダーの入手元（[ブリック復旧](#ブリック復旧-edlと開腹不要のトリガーケーブル)節のローダーの話を参照）。
+- [zmart Xiaomi Deep Flash Cable — Amazon.co.jp](https://www.amazon.co.jp/dp/B06XYP1J7N) —本リポジトリの作業全体を通して実際に使った、開腹不要のEDLトリガーケーブル。
 
 **MCFG / `mcfg_sw.mbn` ツールとフォーマット関連の参考資料:**
 - [`sbaresearch/mbn-mcfg-tools`](https://github.com/sbaresearch/mbn-mcfg-tools) — 本リポジトリ全体で使っているextract/repack/ハッシュ検証ツール（`patches/mbn-mcfg-tools-windows-path-fix.patch`参照）

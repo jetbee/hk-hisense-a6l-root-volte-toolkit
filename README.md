@@ -56,7 +56,7 @@ This is not a polished how-to for beginners — it's a record of what was actual
 
 **You'll touch this once even on a smooth run** — before you unlock anything, you have no root and a locked bootloader, so EDL raw partition reads are the only practical way to back up your stock `boot`/`vbmeta`/`system`/modem partitions as the disclaimer above recommends. After that initial backup, everything else in this section is purely the fallback for when something goes wrong (a bad flash, a bootloop, etc) — the unlock steps themselves (all plain `fastboot`) never need EDL again.
 
-Emergency Download Mode (EDL) requires shorting test points inside the phone (teardown), normally. Look for a **"deep flash cable" / "EDL cable" / "test point cable"** for Snapdragon devices — these are USB cables with a resistor wired into a spare pin that forces the phone into EDL on connection, no disassembly required. Cheap, widely sold for exactly this purpose, and worth buying before you start rather than after you need it.
+Emergency Download Mode (EDL) requires shorting test points inside the phone (teardown), normally. Look for a **"deep flash cable" / "EDL cable" / "test point cable"** for Snapdragon devices — these are USB cables with a resistor wired into a spare pin that forces the phone into EDL on connection, no disassembly required. Cheap, widely sold for exactly this purpose, and worth buying before you start rather than after you need it. The one used here: [zmart Xiaomi Deep Flash Cable, "Open Port 9008", "Phone Model Free"](https://www.amazon.co.jp/dp/B06XYP1J7N) — sold/labeled for Xiaomi, but it's a generic Snapdragon trigger cable and worked fine on this Hisense device too.
 
 Entry procedure that reliably works on this device with such a cable:
 
@@ -182,6 +182,7 @@ Not included: any Hisense/Qualcomm-copyrighted binaries (stock or patched APK, `
 **Flashing tools:**
 - [`aimindseye/hisense-a9`](https://github.com/aimindseye/hisense-a9) — source of the patched `fastboot` binary that actually recognizes the `Hisense` OEM subcommand (see [Unlock steps](#unlock-steps)). It's for a different Hisense model, but the binary itself is OEM-specific, not model-specific.
 - [`bkerler/edl`](https://github.com/bkerler/edl) — source of the generic SDM660 Firehose loader that actually worked for EDL (see the loader discussion in [Brick recovery](#brick-recovery-edl-and-a-no-teardown-trigger-cable)).
+- [zmart Xiaomi Deep Flash Cable — Amazon.co.jp](https://www.amazon.co.jp/dp/B06XYP1J7N) — the no-teardown EDL trigger cable actually used throughout this repo's work.
 
 **MCFG / `mcfg_sw.mbn` tooling and format references:**
 - [`sbaresearch/mbn-mcfg-tools`](https://github.com/sbaresearch/mbn-mcfg-tools) — the extract/repack/hash-check tool used throughout this repo (see `patches/mbn-mcfg-tools-windows-path-fix.patch`)
