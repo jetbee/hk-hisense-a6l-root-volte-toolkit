@@ -19,6 +19,7 @@ This is not a polished how-to for beginners — it's a record of what was actual
 - [Technique 3 (the one that actually worked for Rakuten): try every stock carrier profile](#technique-3-the-one-that-actually-worked-for-rakuten-try-every-stock-carrier-profile)
 - [Why offline-edited mcfg_sw.mbn files get rejected](#why-offline-edited-mcfg_swmbn-files-get-rejected)
 - [Tools included in this repo](#tools-included-in-this-repo)
+- [References / links that helped](#references--links-that-helped)
 - [Open questions / not yet solved](#open-questions--not-yet-solved)
 
 ## Device background
@@ -31,6 +32,18 @@ This is not a polished how-to for beginners — it's a record of what was actual
 - Firehose loader for EDL: `prog_emmc_ufs_firehose_Sdm660_ddr_30060000.elf`
 
 ## Permanent root / bootloader unlock
+
+### Entering fastboot mode
+
+1. Power the phone off completely.
+2. Plug a normal USB cable into the **phone** side only (no trigger cable / clothespin trick needed here, unlike EDL).
+3. Don't press Power. Hold **Volume Up** only, and while holding it, plug the other end of the cable into the **PC**.
+4. The phone should vibrate once and boot into fastboot, showing `START` and (if you actually read the tiny text) real fastboot status output. That's success.
+5. You can release Volume Up once you're in.
+
+**Gotcha:** on some USB ports, the normal fastboot screen flashes up and immediately disappears, then the phone goes dark and vibrates again — repeating in a loop. Don't fight this trying to catch it at just the right moment; even if you do, there's tiny text (magnifying-glass-small) in the top-left of the LCD reading `press any key to shutdown`, and it's stuck looping on that. Root cause: a non-fastboot driver (e.g. from a stray Zadig binding) is attached to the port your OS is routing the connection through. Fix: put a USB hub in between so the device enumerates on a **different, fresh** port — once it lands on a port without that stale driver binding, it stops cleanly at the fastboot screen as expected.
+
+### Unlock steps
 
 1. Temp-unlock via the OEM `fastboot Hisense unlock` command. **Stock platform-tools `fastboot` does not recognize the `Hisense` OEM subcommand** — you need a custom/patched fastboot binary that supports it (search for Hisense-specific fastboot tools; not redistributed here).
 2. `fastboot erase avb_custom_key` — this is the actual irreversible unlock step. It does **not** by itself wipe userdata or show a confirmation dialog on this device (contrary to some guides for other Hisense models) — issue `fastboot erase userdata` yourself too, or be ready to do a factory reset from the resulting "Decryption Unsuccessful" recovery screen.
@@ -143,6 +156,31 @@ Net effect: **don't bother hand-editing an `.mbn` and trying to re-import it via
 - `scripts/efs-explorer-automation-helpers.ps1` — PowerShell mouse/keyboard automation for driving QPST EFS Explorer's dialogs (Technique 2).
 
 Not included: any Hisense/Qualcomm-copyrighted binaries (stock or patched APK, `.mbn` files, boot images). Regenerate those yourself from your own device's firmware using the patches above.
+
+## References / links that helped
+
+**Firmware for this device (HLTE730T):**
+- [Hisense A6L HLTE730T — Needrom](https://www.needrom.com/download/hisense-a6l-hlte730t/) — several dated stock firmware builds
+- [Hisense A6L firmware support — RomProvider](https://romprovider.com/hisense-a6l-firmware-support/)
+- [Hisense A6L HLTE730T — FindROM.info](https://www.findrom.info/hisense-a6l-hlte730t/)
+- [fans.hisense.com official forum thread](http://fans.hisense.com/thread-172687-1-1.html) — the most authoritative source (it's Hisense's own community site), but downloads there are gated behind a forum-account reply ("回复可见"); worth doing if you can, since third-party mirrors of this device's firmware are otherwise scarce.
+
+**MCFG / `mcfg_sw.mbn` tooling and format references:**
+- [`sbaresearch/mbn-mcfg-tools`](https://github.com/sbaresearch/mbn-mcfg-tools) — the extract/repack/hash-check tool used throughout this repo (see `patches/mbn-mcfg-tools-windows-path-fix.patch`)
+- [`fenrir-naru/mbn_utils`](https://github.com/fenrir-naru/mbn_utils) — an earlier, simpler tool for the same format; its README's digest/checksum notes were the first confirmation that the whole-package rejection we were hitting was a known, unsolved wall
+- [`Biktorgj/mcfg_tools`](https://github.com/Biktorgj/mcfg_tools) — another independent implementation, not used directly here but worth knowing about
+- [`JohnBel/QualcommMBNs`](https://github.com/JohnBel/QualcommMBNs) — a large collection of extracted `mcfg_sw.mbn` carrier configs pulled from various devices' firmware; didn't happen to have anything for this device/carrier but a good place to look for reference material from others
+- [`JohnBel/EfsTools`](https://github.com/JohnBel/EfsTools) — the original Windows EFS-explorer-via-diag-port tool that several of the guides below are built around
+- [`sm7150-mainline/firmware-xiaomi-courbet`](https://github.com/sm7150-mainline/firmware-xiaomi-courbet/tree/main/lib/firmware/qcom/sm7150/courbet/modem_pr/mcfg/configs/mcfg_sw/generic/apac/rakuten/commerci) — a real, genuine Rakuten Mobile `mcfg_sw.mbn` from a different device's (Xiaomi, SM7150) open firmware tree; different chipset so not flashable here, but its `carrier_policy.xml` content was useful as a reference for what a real carrier-issued Rakuten policy actually contains
+- [Qualcomm Modem Configuration w/ Carrier Policy (XML) — tech.ssut.me](https://tech.ssut.me/qualcomm-modem-configuartion-mbn-with-carrier-policy-description/) — general background on the `carrier_policy.xml` element set
+
+**VoLTE/VoWiFi enabling guides (XDA and others):**
+- [\[Guide\] Enabling VoLTE/VoWiFi (deprecated) — XDA](https://xdaforums.com/rog-phone-2/how-to/guide-enabling-volte-vowifi-t4023529) — ROG Phone 2-specific, but this is the thread that documented the "just try every stock carrier profile in the pack and see which one gives you VoLTE" trick, which is what actually solved this device's Rakuten problem (Technique 3 above)
+- [Attempting to Enable VoLTE — XDA](https://xdaforums.com/t/attempting-to-enable-volte.3979009/) — device-specific but a useful log of the `persist.vendor.dbg.*` property trial-and-error
+- [Getting VoLTE and VoWiFi on unlisted carriers by flashing mbn file — XDA](https://xdaforums.com/t/getting-volte-and-vowifi-on-unlisted-carriers-by-flashing-mbn-file.4467745/) — the `EfsTools.exe uploadDirectory` / `mcfg_autoselect_by_uim` workflow, same underlying technique as Technique 2 above but via EfsTools instead of QPST's own EFS Explorer
+- [How to Enable VoLTE and VoWiFi in Unsupported Country — GetDroidTips](https://www.getdroidtips.com/enable-volte-vowifi-unsupported-country/) — a generic walkthrough of both the `setprop`-only method and the QPST/MBN method; confirms this repo's Technique 2 matches the standard community approach
+- [OnePlus 7T Pro VoLTE — gaddet.com](https://gaddet.com/posts/oneplus-7t-pro-volte/) — mentions the PDC/EfsTools `mcfg_autoselect_by_uim` approach for a different device
+- [楽天モバイル(楽天UN-LIMIT)対応、VoLTEなカスタムROMを作る — ポイドの忘備録](https://solarisintel.hateblo.jp/entry/2021/06/03/102528) — a from-source AOSP custom-ROM approach (APN table, `CarrierConfig` overlay, `config_device_volte_available`) for a different device; the author didn't get it fully working either, but confirms the `mcc=440,mnc=11` APN details and the existence of `carrier_volte_available_bool` as an Android-side (not modem-side) gate worth knowing about
 
 ## Open questions / not yet solved
 
