@@ -21,6 +21,7 @@ This is not a polished how-to for beginners — it's a record of what was actual
 - [Tools included in this repo](#tools-included-in-this-repo)
 - [References / links that helped](#references--links-that-helped)
 - [Open questions / not yet solved](#open-questions--not-yet-solved)
+- [Appendix: known-working environment versions](#appendix-known-working-environment-versions)
 
 ## Device background
 
@@ -205,3 +206,15 @@ Not included: any Hisense/Qualcomm-copyrighted binaries (stock or patched APK, `
 - Whether SoftBank's profile working for Rakuten is coincidence-of-lenient-policy or something more specific to how these two carriers' MCC-440 policies happen to be written — untouched, black-box result.
 - 5GHz WiFi hotspot: France/Japan-style DFS-channel regulatory gating exists on this device for real reasons (not just an artificial restriction), and a first attempt at a jar-swap patch bootlooped the device (recovered via EDL). Root cause of the bootloop: SystemServerClasspath jars need proper deodex/re-encode, not a naive dex swap — same discipline as the ModemTestMode patch above, just not yet re-attempted with the correct technique.
 - `subMask` ended up `1` (single-SIM) rather than `3` (DSDS) during one KDDI Activate, as a side effect of bypassing the HW check — impact on dual-SIM behavior unverified.
+
+## Appendix: known-working environment versions
+
+Everything in this repo was confirmed working together on **2026-09-24**. Software moves; if something doesn't work for you, checking this list first is cheaper than re-debugging from scratch.
+
+| Component | Version |
+|---|---|
+| Device firmware | `L1632.6.01.04` (`ro.build.fingerprint`: `Hisense/HLTE730T/HLTE730T:9/PKQ1.190723.001/L1632.6.01.04:user/release-keys`) |
+| Android | 9 (PKQ1.190723.001) |
+| Modem firmware baseline | `MPSS.AT.3.1-00819-SDM660_1.2` |
+| Magisk | 30.7 |
+| QPST | 2.7 (`2.7.496.1`) |
