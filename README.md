@@ -29,7 +29,6 @@ This is not a polished how-to for beginners — it's a record of what was actual
 - **SoC:** Qualcomm Snapdragon 660 (SDM660)
 - **Modem firmware baseline:** `MPSS.AT.3.1-00819-SDM660_1.2` (visible in QPST), Policy Manager XML header shows `mmcp.mpss/8.1.1`
 - **Android:** 9.0, China-market firmware, no Google apps, VoLTE gated at the Android framework layer regardless of modem capability
-- Firehose loader for EDL: `prog_emmc_ufs_firehose_Sdm660_ddr_30060000.elf`
 
 ## Permanent root / bootloader unlock
 
@@ -66,7 +65,15 @@ Entry procedure that reliably works on this device with such a cable:
 6. Release the buttons immediately, and don't forget to remove the clothespin/clip from the cable button afterward.
 7. The device should now enumerate and be reachable from the PC (Sahara/Firehose). Note: **while the cable's button is held down, the device cannot communicate** — it must be released for the PC-side tooling to actually talk to it.
 
-Once in EDL, use `edl.py` (or Qualcomm's own `QSaharaServer`/`fh_loader` from QPST) with the firehose loader listed above to read/write `boot`, `vbmeta`, `system`, and modem partitions raw. Constraints we hit:
+Enumerating in EDL only gets you the Sahara handshake — you can't actually read or write anything yet. To do that, the PC side uploads a **Firehose loader** (a small `.elf` programmer image) into the device's RAM over Sahara; the loader is what actually speaks the Firehose protocol and does the raw partition read/write from then on. Without a loader that this device's PBL accepts, you're stuck at Sahara and nothing else in this section works — it's effectively the key that unlocks everything past that point.
+
+The one that worked here: `prog_emmc_ufs_firehose_Sdm660_ddr_30060000.elf`. A few things worth knowing:
+- This is a **generic SDM660 loader**, not something extracted from Hisense's own firmware specifically — on this device's PBL it isn't cryptographically tied to Hisense at all, so a loader pulled from a *different* SDM660 device's official flash tool package works fine, as long as the chipset matches.
+- The easiest place to get one: [`bkerler/edl`](https://github.com/bkerler/edl) (the open-source `edl.py`/`qdl` project) bundles loaders for a wide range of Qualcomm chipsets, SDM660 included. QPST/QFIL packages for other SDM660-based devices are another source.
+- If EDL enumerates (Sahara succeeds) but every operation fails or times out, suspect the loader first — either the wrong chipset variant or a loader your PBL genuinely does reject.
+- We actually tried the "obvious" thing first — pulling a Firehose loader out of a downloaded Hisense A6L firmware package (from one of the ROM sites listed later in this doc) — and it did **not** work; Sahara wouldn't accept it. The generic `bkerler/edl` SDM660 loader linked above (not specific to this device at all) is the one that actually worked. Not fully root-caused — just know that "use the loader from an official-looking firmware package for this exact device" is not a safe assumption here, and reaching for the generic community one first will save you time.
+
+Once you have a working loader, use `edl.py` (or Qualcomm's own `QSaharaServer`/`fh_loader` from QPST) to read/write `boot`, `vbmeta`, `system`, and modem partitions raw. Constraints we hit:
 - One read/write operation per EDL session on this device — power-cycle and re-enter EDL between operations.
 - Kill any stray Python processes holding the port before retrying.
 - Set `PYTHONIOENCODING=utf-8` / `PYTHONUTF8=1` if using `edl.py` on Windows.
