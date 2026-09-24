@@ -17,6 +17,7 @@ Snapdragon 660 (SDM660) 搭載で、前面が通常のカラーLCD、背面が�
 - [手法1: ModemTestModeをパッチしてQMIを直接叩く](#手法1-modemtestmodeをパッチしてqmiを直接叩く)
 - [手法2: QPST経由でモデムEFSをライブ編集する](#手法2-qpst経由でモデムefsをライブ編集する)
 - [手法3（楽天SIMで実際に効いたのはコレ）: 純正キャリアプロファイルを総当たりする](#手法3楽天simで実際に効いたのはコレ-純正キャリアプロファイルを総当たりする)
+- [おまけ: 5GHz WiFiホットスポットの有効化](#おまけ-5ghz-wifiホットスポットの有効化)
 - [オフラインで編集したmcfg_sw.mbnが拒否される理由](#オフラインで編集したmcfg_swmbnが拒否される理由)
 - [このリポジトリに含まれるツール](#このリポジトリに含まれるツール)
 - [参考リンク集](#参考リンク集)
@@ -151,6 +152,46 @@ Windows側で`Diagnostics Interface (COMx)`というデバイスが列挙され�
 
 **特定のSIM向けにVoLTEを追いかけていて、端末に複数の純正キャリアプロファイルが用意されているなら、パッチを書く前に全部試してみてください。** タダで、速くて、完全に元に戻せて（別のプロファイルで`MbnFileLoad`/`MbnFileActivate`をやり直すか、元のプロファイルに戻すだけ）、それだけで解決するかもしれません。
 
+## おまけ: 5GHz WiFiホットスポットの有効化
+
+この端末はWiFi to WiFiテザリング（他所のWiFi——例えばホテルのWiFi——をこの端末経由でプロクシする使い方）に対応していますが、日本向けファームウェアでは5GHz帯のSoftApが常に`SAP_START_FAILURE_NO_CHANNEL`で起動失敗します。屋内でしか使わないのに5GHzが塞がれているのはもったいないので、有効化するパッチを作りました。
+
+> **⚠️ 免責事項:** 日本国内で5GHz帯を屋外で使用することは電波法上できません。**必ず屋内でのみ使用してください。** このパッチは自己責任で使用してください。本節はあえて詳細な解説を省き、コマンドの列挙とパッチファイルのみとします。
+
+パッチ内容: `patches/WifiInjector-makeSoftApManager.smali.diff`（`WifiInjector.smali`の`makeSoftApManager()`内、SoftApManagerに渡す国コードのみを`"US"`に固定——STA/通常WiFi接続には影響しない）。
+
+```sh
+# 1. スタブjar本体+実コード(odex/vdex)を取得
+adb pull /system/framework/wifi-service.jar
+adb pull /system/framework/oat/arm64/wifi-service.odex
+adb pull /system/framework/oat/arm64/wifi-service.vdex
+
+# 2. boot classpath全体を使ってdeodex（手法1のModemTestModeパッチと同じ流儀。boot.oatを含むディレクトリで実行すること）
+java -jar baksmali.jar deodex -b boot.oat wifi-service.odex -o smali-out
+
+# 3. patches/WifiInjector-makeSoftApManager.smali.diff を smali-out/com/android/server/wifi/WifiInjector.smali に適用
+
+# 4. 再アセンブル
+java -jar smali.jar assemble smali-out -o classes.dex --api 28
+
+# 5. スタブjarに新規zipエントリとして追加（元jarにclasses.dexは無い）
+cp wifi-service.jar wifi-service-patched.jar
+jar uf wifi-service-patched.jar classes.dex
+
+# 6. Magiskモジュールとしてデプロイ（systemパーティション本体には触らない）
+adb shell su -c mkdir -p /data/adb/modules/<id>/system/framework/oat/arm64
+adb push wifi-service-patched.jar /sdcard/
+adb shell su -c cp /sdcard/wifi-service-patched.jar /data/adb/modules/<id>/system/framework/wifi-service.jar
+adb shell su -c mknod /data/adb/modules/<id>/system/framework/oat/arm64/wifi-service.odex c 0 0
+adb shell su -c mknod /data/adb/modules/<id>/system/framework/oat/arm64/wifi-service.vdex c 0 0
+# module.prop を /data/adb/modules/<id>/module.prop に配置
+adb shell su -c rm -f /data/dalvik-cache/arm64/system@framework@wifi-service.jar@classes.dex
+adb shell su -c rm -f /data/dalvik-cache/arm64/system@framework@wifi-service.jar@classes.vdex
+
+# 7. 再起動してから、設定 > パーソナルホットスポット > Set up super hotspot > Select AP Band > 5 GHz Band を選択してON
+adb reboot
+```
+
 ## オフラインで編集したmcfg_sw.mbnが拒否される理由
 
 プロファイル総当たりで解決しなかった場合に備えて、実際に`carrier_policy.xml`を編集する必要が出たときに何と戦うことになるかを先に書いておきます。
@@ -166,6 +207,7 @@ Windows側で`Diagnostics Interface (COMx)`というデバイスが列挙され�
 ## このリポジトリに含まれるツール
 
 - `patches/ModemTestMode-MbnFileActivate.smali.diff` — HWチェックのバイパス（手法1）。これは素のAPKを自分でbaksmaliした出力に対するdiffであり、再配布バイナリではありません——パッチ済みdexは自分の端末から取得したファームウェアを元に自分で生成してください。
+- `patches/WifiInjector-makeSoftApManager.smali.diff` — 5GHz SoftApの国コード上書き（上記「おまけ」節参照）。同様に、自分のbaksmali出力に対するdiffであり、再配布バイナリではありません。
 - `patches/mbn-mcfg-tools-windows-path-fix.patch` — `sbaresearch/mbn-mcfg-tools`向けのWindowsパス処理修正。
 - `scripts/efs-explorer-automation-helpers.ps1` — QPST EFS Explorerのダイアログを操作するPowerShellマウス/キーボード自動化（手法2）。
 
@@ -205,7 +247,6 @@ Windows側で`Diagnostics Interface (COMx)`というデバイスが列挙され�
 
 - KDDI/docomoプロファイルが具体的になぜホーム以外のPLMNのデータPDNを拒否するのか（`OEM_DCFAILCAUSE_4`）——特定のNVアイテムに絞り込めていません。候補の一つ（`/nv/item_files/modem/mmode/is_plmn_block_req_in_lte_only_mode`）は試して実測で否定済みです。
 - SoftBankのプロファイルが楽天SIMで動くのが「たまたま緩いポリシーだった」だけなのか、この2キャリアのMCC 440ポリシーの書かれ方に何か特有の事情があるのか——ブラックボックスな結果のまま未解析です。
-- 5GHz WiFiテザリング: この端末にはフランス/日本的なDFSチャンネルの規制上のゲーティングが実在の理由で存在しており（単なる人為的制限ではない）、jar差し替えによる最初のパッチ試行はブートループしました（EDLで復旧済み）。ブートループの根本原因: SystemServerClasspathのjarは、ModemTestModeパッチと同じ作法（適切なdeodex/再エンコード）が必要で、素朴なdex差し替えでは済まない——同じ手法での再挑戦はまだ行っていません。
 - あるKDDI Activate時に`subMask`が`3`（DSDS）ではなく`1`（シングルSIM相当）になった——HWチェックのバイパスの副作用と思われます。デュアルSIM動作への影響は未検証です。
 
 ## 付録: 動作確認済みの環境バージョン

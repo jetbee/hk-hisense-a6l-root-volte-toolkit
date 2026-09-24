@@ -17,6 +17,7 @@ This is not a polished how-to for beginners — it's a record of what was actual
 - [Technique 1: patching ModemTestMode to drive QMI directly](#technique-1-patching-modemtestmode-to-drive-qmi-directly)
 - [Technique 2: live-editing modem EFS via QPST](#technique-2-live-editing-modem-efs-via-qpst)
 - [Technique 3 (the one that actually worked for Rakuten): try every stock carrier profile](#technique-3-the-one-that-actually-worked-for-rakuten-try-every-stock-carrier-profile)
+- [Bonus: enabling the 5GHz WiFi hotspot](#bonus-enabling-the-5ghz-wifi-hotspot)
 - [Why offline-edited mcfg_sw.mbn files get rejected](#why-offline-edited-mcfg_swmbn-files-get-rejected)
 - [Tools included in this repo](#tools-included-in-this-repo)
 - [References / links that helped](#references--links-that-helped)
@@ -151,6 +152,46 @@ The pattern: the two Japanese-MNO-specific profiles we tried (KDDI, docomo) both
 
 **If you're chasing VoLTE for a specific SIM on a device with several stock carrier profiles available: try all of them before writing any patches.** It's free, fast, fully reversible (just re-Activate `MbnFileLoad`/`MbnFileActivate` on another profile, or the original), and may just work.
 
+## Bonus: enabling the 5GHz WiFi hotspot
+
+This device supports WiFi-to-WiFi tethering (proxying someone else's WiFi — e.g. a hotel's — through this device), but on Japan-market firmware the 5GHz SoftAp always fails to start with `SAP_START_FAILURE_NO_CHANNEL`. Since this is only meant for indoor use anyway, it felt wasteful to have 5GHz permanently blocked, so a patch was made to unlock it.
+
+> **⚠️ Disclaimer:** Using the 5GHz band outdoors is illegal under Japanese radio law. **Only use this indoors.** Use this patch at your own risk. This section is intentionally kept to a command list and the patch file, with no further explanation.
+
+The patch: `patches/WifiInjector-makeSoftApManager.smali.diff` (in `WifiInjector.smali`'s `makeSoftApManager()`, pins the country code passed to `SoftApManager` to `"US"` — STA/client-mode WiFi is unaffected).
+
+```sh
+# 1. Pull the stub jar + the real code (odex/vdex)
+adb pull /system/framework/wifi-service.jar
+adb pull /system/framework/oat/arm64/wifi-service.odex
+adb pull /system/framework/oat/arm64/wifi-service.vdex
+
+# 2. Deodex against the full boot classpath (same discipline as the ModemTestMode patch, Technique 1 above; run from the directory containing boot.oat)
+java -jar baksmali.jar deodex -b boot.oat wifi-service.odex -o smali-out
+
+# 3. Apply patches/WifiInjector-makeSoftApManager.smali.diff to smali-out/com/android/server/wifi/WifiInjector.smali
+
+# 4. Reassemble
+java -jar smali.jar assemble smali-out -o classes.dex --api 28
+
+# 5. Add as a new zip entry to the stub jar (the original jar has no classes.dex)
+cp wifi-service.jar wifi-service-patched.jar
+jar uf wifi-service-patched.jar classes.dex
+
+# 6. Deploy as a Magisk module (don't touch the system partition directly)
+adb shell su -c mkdir -p /data/adb/modules/<id>/system/framework/oat/arm64
+adb push wifi-service-patched.jar /sdcard/
+adb shell su -c cp /sdcard/wifi-service-patched.jar /data/adb/modules/<id>/system/framework/wifi-service.jar
+adb shell su -c mknod /data/adb/modules/<id>/system/framework/oat/arm64/wifi-service.odex c 0 0
+adb shell su -c mknod /data/adb/modules/<id>/system/framework/oat/arm64/wifi-service.vdex c 0 0
+# place a module.prop at /data/adb/modules/<id>/module.prop
+adb shell su -c rm -f /data/dalvik-cache/arm64/system@framework@wifi-service.jar@classes.dex
+adb shell su -c rm -f /data/dalvik-cache/arm64/system@framework@wifi-service.jar@classes.vdex
+
+# 7. Reboot, then Settings > Personal Hotspot > Set up super hotspot > Select AP Band > 5 GHz Band, then turn it on
+adb reboot
+```
+
 ## Why offline-edited mcfg_sw.mbn files get rejected
 
 If profile-swapping doesn't get you there and you actually need to edit a `carrier_policy.xml`, know what you're up against first.
@@ -166,6 +207,7 @@ Net effect: **don't bother hand-editing an `.mbn` and trying to re-import it via
 ## Tools included in this repo
 
 - `patches/ModemTestMode-MbnFileActivate.smali.diff` — the HW-check bypass (Technique 1). This is a diff against baksmali output of the stock APK's own code, not a redistributed binary — you regenerate the patched dex yourself.
+- `patches/WifiInjector-makeSoftApManager.smali.diff` — the 5GHz SoftAp country-code override (see the 5GHz bonus section above). Same caveat: diff against your own baksmali output, not a redistributed binary.
 - `patches/mbn-mcfg-tools-windows-path-fix.patch` — Windows path-handling fix for `sbaresearch/mbn-mcfg-tools`.
 - `scripts/efs-explorer-automation-helpers.ps1` — PowerShell mouse/keyboard automation for driving QPST EFS Explorer's dialogs (Technique 2).
 
@@ -205,7 +247,6 @@ Not included: any Hisense/Qualcomm-copyrighted binaries (stock or patched APK, `
 
 - Root cause of why KDDI/docomo profiles specifically reject non-home-PLMN data PDN (`OEM_DCFAILCAUSE_4`) — never isolated to a specific NV item; one candidate (`/nv/item_files/modem/mmode/is_plmn_block_req_in_lte_only_mode`) was tried and ruled out empirically.
 - Whether SoftBank's profile working for Rakuten is coincidence-of-lenient-policy or something more specific to how these two carriers' MCC-440 policies happen to be written — untouched, black-box result.
-- 5GHz WiFi hotspot: France/Japan-style DFS-channel regulatory gating exists on this device for real reasons (not just an artificial restriction), and a first attempt at a jar-swap patch bootlooped the device (recovered via EDL). Root cause of the bootloop: SystemServerClasspath jars need proper deodex/re-encode, not a naive dex swap — same discipline as the ModemTestMode patch above, just not yet re-attempted with the correct technique.
 - `subMask` ended up `1` (single-SIM) rather than `3` (DSDS) during one KDDI Activate, as a side effect of bypassing the HW check — impact on dual-SIM behavior unverified.
 
 ## Appendix: known-working environment versions

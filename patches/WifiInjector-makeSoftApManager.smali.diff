@@ -1,0 +1,14 @@
+--- a/com/android/server/wifi/WifiInjector.smali
++++ b/com/android/server/wifi/WifiInjector.smali
+@@ -2192,6 +2192,9 @@
+     iget-object v0, p0, Lcom/android/server/wifi/WifiInjector;->mCountryCode:Lcom/android/server/wifi/WifiCountryCode;
+
+     .line 471
+     invoke-virtual {v0}, Lcom/android/server/wifi/WifiCountryCode;->getCountryCode()Ljava/lang/String;
+
+     move-result-object v5
+
++    # AP-only country code override for 5GHz SoftAp DFS unlock (STA/client mode regdomain untouched)
++    const-string v5, "US"
++
+     iget-object v7, p0, Lcom/android/server/wifi/WifiInjector;->mWifiApConfigStore:Lcom/android/server/wifi/WifiApConfigStore;
