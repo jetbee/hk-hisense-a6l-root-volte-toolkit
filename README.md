@@ -38,7 +38,7 @@ This is not a polished how-to for beginners — it's a record of what was actual
 1. Power the phone off completely.
 2. Plug a normal USB cable into the **phone** side only (no trigger cable / clothespin trick needed here, unlike EDL).
 3. Don't press Power. Hold **Volume Up** only, and while holding it, plug the other end of the cable into the **PC**.
-4. The phone should vibrate once and boot into fastboot, showing `START` and (if you actually read the tiny text) real fastboot status output. That's success.
+4. The phone should vibrate once and boot into fastboot, showing `START`, `Unlock status`, and other fastboot status text in normal, easily-readable large print. That's success.
 5. You can release Volume Up once you're in.
 
 **Gotcha:** on some USB ports, the normal fastboot screen flashes up and immediately disappears, then the phone goes dark and vibrates again — repeating in a loop. Don't fight this trying to catch it at just the right moment; even if you do, there's tiny text (magnifying-glass-small) in the top-left of the LCD reading `press any key to shutdown`, and it's stuck looping on that. Root cause: a non-fastboot driver (e.g. from a stray Zadig binding) is attached to the port your OS is routing the connection through. Fix: put a USB hub in between so the device enumerates on a **different, fresh** port — once it lands on a port without that stale driver binding, it stops cleanly at the fastboot screen as expected.
