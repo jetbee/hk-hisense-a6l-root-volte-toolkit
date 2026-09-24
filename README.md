@@ -41,6 +41,16 @@ This is not a polished how-to for beginners — it's a record of what was actual
 
 Emergency Download Mode (EDL) is the fallback for anything that goes wrong above. Normally EDL requires shorting test points inside the phone (teardown). Look for a **"deep flash cable" / "EDL cable" / "test point cable"** for Snapdragon devices — these are USB cables with a resistor wired into a spare pin that forces the phone into EDL on connection, no disassembly required. Cheap, widely sold for exactly this purpose, and worth buying before you start rather than after you need it.
 
+Entry procedure that reliably works on this device with such a cable:
+
+1. Power the phone off completely.
+2. Hold the cable's inline button down (a clothespin/binder clip works well for this) and plug the cable into the **phone** — leave the other end **unplugged from the PC** for now.
+3. Get your left hand ready on **Volume Down** and **Power**, don't press yet.
+4. With your right hand, plug the USB end into the **PC** — this should land *just* before, or essentially simultaneously with, pressing Volume Down + Power together with your left hand.
+5. Wait 2–3 seconds. **No vibration and a black screen means it worked** (a vibration means it booted normally instead — power off and retry).
+6. Release the buttons immediately, and don't forget to remove the clothespin/clip from the cable button afterward.
+7. The device should now enumerate and be reachable from the PC (Sahara/Firehose). Note: **while the cable's button is held down, the device cannot communicate** — it must be released for the PC-side tooling to actually talk to it.
+
 Once in EDL, use `edl.py` (or Qualcomm's own `QSaharaServer`/`fh_loader` from QPST) with the firehose loader listed above to read/write `boot`, `vbmeta`, `system`, and modem partitions raw. Constraints we hit:
 - One read/write operation per EDL session on this device — power-cycle and re-enter EDL between operations.
 - Kill any stray Python processes holding the port before retrying.
