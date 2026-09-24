@@ -1,0 +1,22 @@
+diff --git a/src/mbn_mcfg_tools/mbn.py b/src/mbn_mcfg_tools/mbn.py
+index d4cf5f02..f4d791df 100644
+--- a/src/mbn_mcfg_tools/mbn.py
++++ b/src/mbn_mcfg_tools/mbn.py
+@@ -86,7 +86,7 @@ class Mbn:
+                 nv_items.append(item)
+                 continue
+ 
+-            filename = Path(item["filename"].strip(b"\x00").decode())
++            filename = Path(item["filename"].strip(b"\x00").decode().lstrip("/\\"))
+             free_name = _free_name(filename, used_paths)
+             used_paths.update(free_name.parents, [free_name])
+ 
+@@ -338,7 +338,7 @@ def _free_name(name: Path, used: set[Path]) -> Path:
+ 
+ def _extracted_filename(item: MCFG_Item) -> Path:
+     n = item["filename_alias"] if "filename_alias" in item else item["filename"]
+-    return Path(n.strip(b"\x00").decode())
++    return Path(n.strip(b"\x00").decode().lstrip("/\\"))
+ 
+ 
+ def _first_implicit_exception(e: BaseException) -> BaseException:
