@@ -157,6 +157,31 @@ Windows側で`Diagnostics Interface (COMx)`というデバイスが列挙され�
 
 含まれていないもの: Hisense/Qualcommの著作権があるバイナリ全般（純正・パッチ済み問わずAPK、`.mbn`ファイル、boot image）。上記のパッチを使って、自分の端末のファームウェアから自分で再生成してください。
 
+## 参考リンク集
+
+**この端末（HLTE730T）のファームウェア:**
+- [Hisense A6L HLTE730T — Needrom](https://www.needrom.com/download/hisense-a6l-hlte730t/) — 日付違いの純正ファームウェア複数
+- [Hisense A6L firmware support — RomProvider](https://romprovider.com/hisense-a6l-firmware-support/)
+- [Hisense A6L HLTE730T — FindROM.info](https://www.findrom.info/hisense-a6l-hlte730t/)
+- [fans.hisense.com 公式フォーラムスレッド](http://fans.hisense.com/thread-172687-1-1.html) — 一番権威のあるソース（Hisense自身のコミュニティサイト）だが、ダウンロードはフォーラムアカウントでの返信必須（「回复可见」）で塞がれている。可能ならやる価値あり——この端末のファームウェアのサードパーティミラーは他にあまり出回っていない。
+
+**MCFG / `mcfg_sw.mbn` ツールとフォーマット関連の参考資料:**
+- [`sbaresearch/mbn-mcfg-tools`](https://github.com/sbaresearch/mbn-mcfg-tools) — 本リポジトリ全体で使っているextract/repack/ハッシュ検証ツール（`patches/mbn-mcfg-tools-windows-path-fix.patch`参照）
+- [`fenrir-naru/mbn_utils`](https://github.com/fenrir-naru/mbn_utils) — 同じフォーマット向けのより初期のシンプルなツール。READMEのダイジェスト/チェックサムに関する記述が、私たちがぶつかっていた「パッケージ丸ごとのインポート拒否」が既知の未解決の壁であることの最初の裏付けになった
+- [`Biktorgj/mcfg_tools`](https://github.com/Biktorgj/mcfg_tools) — 同目的の別の独立実装。ここでは直接使っていないが知っておく価値はある
+- [`JohnBel/QualcommMBNs`](https://github.com/JohnBel/QualcommMBNs) — 様々な機種のファームウェアから抽出された`mcfg_sw.mbn`キャリア設定の大規模コレクション。この端末/キャリア向けのものは無かったが、他の人の参考資料を探す場所として有用
+- [`JohnBel/EfsTools`](https://github.com/JohnBel/EfsTools) — 下記の各種ガイドの多くが前提にしている、diagポート経由のWindows用EFS Explorerツールの元祖
+- [`sm7150-mainline/firmware-xiaomi-courbet`](https://github.com/sm7150-mainline/firmware-xiaomi-courbet/tree/main/lib/firmware/qcom/sm7150/courbet/modem_pr/mcfg/configs/mcfg_sw/generic/apac/rakuten/commerci) — 別機種（Xiaomi、SM7150）のオープンなファームウェアツリーにある、本物の楽天モバイル用`mcfg_sw.mbn`。チップセットが違うのでこの端末には書き込めないが、実際にキャリアが発行した楽天ポリシーの中身がどうなっているかの参考として`carrier_policy.xml`の内容が役立った
+- [Qualcomm Modem Configuration w/ Carrier Policy (XML) — tech.ssut.me](https://tech.ssut.me/qualcomm-modem-configuartion-mbn-with-carrier-policy-description/) — `carrier_policy.xml`の要素一般についての背景解説
+
+**VoLTE/VoWiFi有効化ガイド（XDA他）:**
+- [\[Guide\] Enabling VoLTE/VoWiFi (deprecated) — XDA](https://xdaforums.com/rog-phone-2/how-to/guide-enabling-volte-vowifi-t4023529) — ROG Phone 2向けだが、「プロファイル集を片っ端から試して、どれでVoLTEが効くか見る」というテクニックを記録している元スレッド。これがまさに本リポジトリの手法3で楽天の問題を実際に解決した方法
+- [Attempting to Enable VoLTE — XDA](https://xdaforums.com/t/attempting-to-enable-volte.3979009/) — 機種固有の内容だが、`persist.vendor.dbg.*`プロパティの試行錯誤ログとして有用
+- [Getting VoLTE and VoWiFi on unlisted carriers by flashing mbn file — XDA](https://xdaforums.com/t/getting-volte-and-vowifi-on-unlisted-carriers-by-flashing-mbn-file.4467745/) — `EfsTools.exe uploadDirectory` / `mcfg_autoselect_by_uim`の手順。本リポジトリの手法2と根本は同じ技法だが、QPST自身のEFS Explorerの代わりにEfsToolsを使うバージョン
+- [How to Enable VoLTE and VoWiFi in Unsupported Country — GetDroidTips](https://www.getdroidtips.com/enable-volte-vowifi-unsupported-country/) — `setprop`のみの方法とQPST/MBNの方法、両方の一般的な解説。本リポジトリの手法2がコミュニティの標準的アプローチと一致していることの裏付けにもなった
+- [OnePlus 7T Pro VoLTE — gaddet.com](https://gaddet.com/posts/oneplus-7t-pro-volte/) — 別機種向けのPDC/EfsToolsの`mcfg_autoselect_by_uim`アプローチに言及
+- [楽天モバイル(楽天UN-LIMIT)対応、VoLTEなカスタムROMを作る — ポイドの忘備録](https://solarisintel.hateblo.jp/entry/2021/06/03/102528) — 別機種向けの、AOSPソースからのカスタムROMビルドによるアプローチ（APNテーブル、`CarrierConfig`オーバーレイ、`config_device_volte_available`）。著者自身も完全動作には至っていないが、`mcc=440,mnc=11`のAPN詳細や、（モデム側ではなく）Android側のゲートとしての`carrier_volte_available_bool`の存在は知っておく価値がある
+
 ## 未解決の課題
 
 - KDDI/docomoプロファイルが具体的になぜホーム以外のPLMNのデータPDNを拒否するのか（`OEM_DCFAILCAUSE_4`）——特定のNVアイテムに絞り込めていません。候補の一つ（`/nv/item_files/modem/mmode/is_plmn_block_req_in_lte_only_mode`）は試して実測で否定済みです。
