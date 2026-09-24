@@ -47,6 +47,8 @@ Snapdragon 660 (SDM660) 搭載で、前面が通常のカラーLCD、背面が�
 1. OEMの`fastboot Hisense unlock`コマンドで一時アンロック。**素の platform-tools の`fastboot`は`Hisense`というOEMサブコマンドを認識しません** — これに対応したカスタム/パッチ済みfastbootバイナリが必要です。私たちが実際に使えたのは、[`aimindseye/hisense-a9`](https://github.com/aimindseye/hisense-a9)（別のHisense機種向けだが関連するリポジトリ）に貼られているGoogle Driveリンク経由のものでした——このパッチ済みfastbootバイナリ自体は機種固有ではなくOEM（Hisense）固有のものです。本リポジトリでは再配布していないので、自分でリンクを見つけて確認するか、リンクが切れていたら他のHisense専用fastbootツールを探してください。
 2. `fastboot erase avb_custom_key` — これが実際に不可逆な本アンロック処理です。この端末では、これ単体ではuserdataの消去も確認ダイアログの表示も**行われません**（他機種向けの一部ガイドとは異なる挙動）——自分で`fastboot erase userdata`も実行するか、結果として出る「Decryption Unsuccessful」のリカバリー画面から手動で初期化する覚悟をしてください。
 3. Magiskでパッチした`boot.img`と、`--disable-verity --disable-verification`付きでフラッシュした`vbmeta.img`を書き込みます。**パッチするのは、ネット上のファームウェア配布パッケージに入っている`boot.img`ではなく、自分の端末からEDLで吸い出した`boot.img`にしてください。** この端末にはリージョン/バージョン違いのファームウェアが複数出回っており、公開されている`boot.img`が自分の実機の中身と一致しない、ということが普通に起こります。違うものをMagiskパッチしてしまうと、下のリカバリー節のお世話になる羽目になりがちです。
+
+   **ここでMagisk自身が勧めてくる「Recovery Mode」は無視してください。** この端末の`boot.img`は本当に`ramdisk_size=0`です（ファームウェアzip由来のものだけでなく、EDLでの実機ライブダンプでも確認済み）——ramdiskを一切持たないlegacy System-as-Root機です。Magiskアプリはこれを自動検出し（ホーム画面に「Ramdisk: No」と出る）、Installで**Recovery Mode**のチェックボックスを自動でONにして、`recovery.img`側をパッチしてそちらに書き込むよう誘導してきます。**その誘導には従わないでください——この端末で実際にroot化された通常起動を得るには行き止まりです。** Recovery Modeのチェックを外し、普通の`boot.img`を直接パッチしてください（「Install → Select and Patch a File」、チェックは外したまま）。Magiskのlegacy-SAR向けramdisk注入機能はramdiskの無いboot imageに対してもちゃんと機能し、出力ファイルの`ramdisk_size`は`0`からゼロでない実際の値になります——これを`recovery`ではなく`boot`に書き込みます。
 4. これで本当のコールドブートを経ても永続します（手順2を省いた一時アンロックのみだと、`fastboot continue`一回分しか有効にならず、本当の再起動で元に戻ります — ここの見極めにかなり時間を使いました）。
 
 ## ブリック復旧: EDLと開腹不要のトリガーケーブル
