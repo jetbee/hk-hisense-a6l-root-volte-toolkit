@@ -122,7 +122,11 @@ The Windows automation helper used throughout (`scripts/efs-explorer-automation-
 
 ## Technique 3 (the one that actually worked for Rakuten): try every stock carrier profile
 
-After a lot of patching effort, the thing that actually solved VoLTE **and** general data for a Rakuten Mobile SIM (MCC/MNC `440-11`) was embarrassingly simple: **just Activate a different unmodified stock carrier profile and see what happens.** This isn't an original idea — it's straight from [XDA: \[Guide\] Enabling VoLTE/VoWiFi (deprecated)](https://xdaforums.com/rog-phone-2/how-to/guide-enabling-volte-vowifi-t4023529), written for a completely different device (ROG Phone 2, Snapdragon 855). That thread's whole method is "try every profile in the pack, note which carrier gets VoLTE from which" — MCFG carrier policies are often scoped by *country* (MCC), not by the specific operator, so an unrelated carrier's profile for your country frequently unlocks VoLTE for you too. That's the entire idea behind this technique; credit belongs there, not here.
+> **Source:** [XDA — \[Guide\] Enabling VoLTE/VoWiFi (deprecated)](https://xdaforums.com/rog-phone-2/how-to/guide-enabling-volte-vowifi-t4023529) by HomerSp, written for a completely different device (ASUS ROG Phone 2, Snapdragon 855). This whole technique is that thread's idea, not ours — we just confirmed it also applies here. Full credit belongs there.
+
+That thread's method: **try every profile in the pack, unmodified, and note which carrier's profile actually gets you VoLTE.** MCFG carrier policies are often scoped by *country* (MCC), not by the specific operator, so an unrelated carrier's profile for your country frequently unlocks VoLTE for you too.
+
+Applying that here: after a lot of patching effort on our own, the thing that actually solved VoLTE **and** general data for a Rakuten Mobile SIM (MCC/MNC `440-11`) was embarrassingly simple — **just Activate a different unmodified stock carrier profile and see what happens.**
 
 Concretely, on this device with a Rakuten SIM:
 
