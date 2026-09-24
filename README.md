@@ -2,7 +2,7 @@
 
 # Hisense A6L (HLTE730T) — Root, Permanent Unlock, and VoLTE Enablement
 
-Field notes and reusable tools from reverse-engineering VoLTE support on the **Hisense A6L (HLTE730T)**, a China-market Snapdragon 660 (SDM660) budget phone with zero VoLTE/IMS support out of the box, for use on Japanese MVNO/MNO SIMs (mineo/KDDI and Rakuten Mobile tested).
+Field notes and reusable tools from reverse-engineering VoLTE support on the **Hisense A6L (HLTE730T)**, a China-market Snapdragon 660 (SDM660) phone with an unusual dual-display design (a regular color LCD on the front, a full E Ink/electronic-paper display on the back) and zero VoLTE/IMS support out of the box, for use on Japanese MVNO/MNO SIMs (mineo/KDDI and Rakuten Mobile tested).
 
 This is not a polished how-to for beginners — it's a record of what was actually tried, what failed, and what worked, so the next person (or future me) doesn't have to re-derive it. Contributions / corrections welcome.
 
@@ -24,6 +24,7 @@ This is not a polished how-to for beginners — it's a record of what was actual
 ## Device background
 
 - **Model:** Hisense A6L, model number `HLTE730T` (also seen as `HLTE730T.B1`, `.B6`)
+- **Form factor:** dual-display — a conventional color LCD on the front, a full E Ink (electronic paper) display on the back, both independently drivable. The framework carries E Ink-specific plumbing (e.g. an `mPreEInkStatus` flag surfaced in `NetworkController.MobileSignalController` logs, a step-counter readout on the lock screen) that isn't present on a normal single-screen device — worth knowing about before assuming any generic Android/Qualcomm guide applies as-is.
 - **SoC:** Qualcomm Snapdragon 660 (SDM660)
 - **Modem firmware baseline:** `MPSS.AT.3.1-00819-SDM660_1.2` (visible in QPST), Policy Manager XML header shows `mmcp.mpss/8.1.1`
 - **Android:** 9.0, China-market firmware, no Google apps, VoLTE gated at the Android framework layer regardless of modem capability

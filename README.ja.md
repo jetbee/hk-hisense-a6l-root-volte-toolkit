@@ -2,7 +2,7 @@
 
 # Hisense A6L (HLTE730T) — root化・永続unlock・VoLTE有効化
 
-Snapdragon 660 (SDM660) 搭載の中国市場向け格安スマホ、**Hisense A6L (HLTE730T)** で、標準では一切対応していないVoLTE/IMSを、日本のMVNO/MNO SIM（mineo/KDDIおよび楽天モバイルで検証）向けに有効化するためのリバースエンジニアリング記録とツール一式。
+Snapdragon 660 (SDM660) 搭載で、前面が通常のカラーLCD、背面がフルサイズのE Ink（電子ペーパー）というかなり特殊な両面ディスプレイ構成を持つ端末、**Hisense A6L (HLTE730T)** で、標準では一切対応していないVoLTE/IMSを、日本のMVNO/MNO SIM（mineo/KDDIおよび楽天モバイルで検証）向けに有効化するためのリバースエンジニアリング記録とツール一式。
 
 初心者向けの整った手順書ではなく、「実際に何を試して、何が失敗して、何が効いたか」の記録です。次に同じことをする人（未来の自分を含む）が同じ回り道をしなくて済むように。指摘・修正歓迎。
 
@@ -24,6 +24,7 @@ Snapdragon 660 (SDM660) 搭載の中国市場向け格安スマホ、**Hisense A
 ## 端末の背景情報
 
 - **機種:** Hisense A6L、型番`HLTE730T`（`HLTE730T.B1`、`.B6`表記も確認）
+- **筐体構成:** 両面ディスプレイ——前面は通常のカラーLCD、背面は独立して描画可能なフルサイズのE Ink（電子ペーパー）ディスプレイ。フレームワーク内部にもE Ink固有の仕組みが組み込まれており（`NetworkController.MobileSignalController`のログに現れる`mPreEInkStatus`フラグ、ロック画面上の歩数表示など）、普通の単一画面Android機とは前提が違う点に注意——一般的なAndroid/Qualcomm向けガイドがそのまま通用するとは限りません。
 - **SoC:** Qualcomm Snapdragon 660 (SDM660)
 - **モデムファームウェアベースライン:** `MPSS.AT.3.1-00819-SDM660_1.2`（QPSTで確認可能）、Policy Manager XMLのヘッダには`mmcp.mpss/8.1.1`と記載
 - **Android:** 9.0、中国市場向けファームウェア、Googleアプリなし、モデムの実力とは無関係にAndroidフレームワーク層でVoLTEがゲートされている
