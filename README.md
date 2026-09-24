@@ -34,7 +34,7 @@ This is not a polished how-to for beginners — it's a record of what was actual
 
 1. Temp-unlock via the OEM `fastboot Hisense unlock` command. **Stock platform-tools `fastboot` does not recognize the `Hisense` OEM subcommand** — you need a custom/patched fastboot binary that supports it (search for Hisense-specific fastboot tools; not redistributed here).
 2. `fastboot erase avb_custom_key` — this is the actual irreversible unlock step. It does **not** by itself wipe userdata or show a confirmation dialog on this device (contrary to some guides for other Hisense models) — issue `fastboot erase userdata` yourself too, or be ready to do a factory reset from the resulting "Decryption Unsuccessful" recovery screen.
-3. Flash a Magisk-patched `boot.img` and a `vbmeta.img` flashed with `--disable-verity --disable-verification`.
+3. Flash a Magisk-patched `boot.img` and a `vbmeta.img` flashed with `--disable-verity --disable-verification`. **Patch the `boot.img` you dumped from your own device via EDL, not one from a firmware package you downloaded off the internet.** This device has multiple regional/version firmware builds floating around, and a publicly-posted `boot.img` can easily not match what's actually on your unit — Magisk-patching the wrong one is a good way to end up needing the recovery section below.
 4. This survives a genuine cold boot. (A temp-unlock-only path, without step 2, only survives a single `fastboot continue` and reverts after a real reboot — this cost significant time to figure out.)
 
 ## Brick recovery: EDL and a no-teardown trigger cable
