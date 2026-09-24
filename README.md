@@ -39,7 +39,9 @@ This is not a polished how-to for beginners — it's a record of what was actual
 
 ## Brick recovery: EDL and a no-teardown trigger cable
 
-Emergency Download Mode (EDL) is the fallback for anything that goes wrong above. Normally EDL requires shorting test points inside the phone (teardown). Look for a **"deep flash cable" / "EDL cable" / "test point cable"** for Snapdragon devices — these are USB cables with a resistor wired into a spare pin that forces the phone into EDL on connection, no disassembly required. Cheap, widely sold for exactly this purpose, and worth buying before you start rather than after you need it.
+**You don't need any of this if the unlock procedure above goes smoothly** — EDL is only the fallback for when something goes wrong (a bad flash, a bootloop, etc). Read this section before you start so you're prepared, but the happy-path root/unlock flow never touches EDL.
+
+Emergency Download Mode (EDL) requires shorting test points inside the phone (teardown), normally. Look for a **"deep flash cable" / "EDL cable" / "test point cable"** for Snapdragon devices — these are USB cables with a resistor wired into a spare pin that forces the phone into EDL on connection, no disassembly required. Cheap, widely sold for exactly this purpose, and worth buying before you start rather than after you need it.
 
 Entry procedure that reliably works on this device with such a cable:
 
