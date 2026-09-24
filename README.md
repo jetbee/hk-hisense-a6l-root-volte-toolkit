@@ -44,7 +44,7 @@ This is not a polished how-to for beginners — it's a record of what was actual
 
 ### Unlock steps
 
-1. Temp-unlock via the OEM `fastboot Hisense unlock` command. **Stock platform-tools `fastboot` does not recognize the `Hisense` OEM subcommand** — you need a custom/patched fastboot binary that supports it (search for Hisense-specific fastboot tools; not redistributed here).
+1. Temp-unlock via the OEM `fastboot Hisense unlock` command. **Stock platform-tools `fastboot` does not recognize the `Hisense` OEM subcommand** — you need a custom/patched fastboot binary that supports it. The one that worked for us came from the Google Drive link posted in [`aimindseye/hisense-a9`](https://github.com/aimindseye/hisense-a9) (a different but related Hisense model's repo — the patched fastboot binary itself isn't model-specific, just OEM-specific). Not redistributed here; go find/verify that link yourself, or search for other Hisense-specific fastboot tools if it's gone stale.
 2. `fastboot erase avb_custom_key` — this is the actual irreversible unlock step. It does **not** by itself wipe userdata or show a confirmation dialog on this device (contrary to some guides for other Hisense models) — issue `fastboot erase userdata` yourself too, or be ready to do a factory reset from the resulting "Decryption Unsuccessful" recovery screen.
 3. Flash a Magisk-patched `boot.img` and a `vbmeta.img` flashed with `--disable-verity --disable-verification`. **Patch the `boot.img` you dumped from your own device via EDL, not one from a firmware package you downloaded off the internet.** This device has multiple regional/version firmware builds floating around, and a publicly-posted `boot.img` can easily not match what's actually on your unit — Magisk-patching the wrong one is a good way to end up needing the recovery section below.
 4. This survives a genuine cold boot. (A temp-unlock-only path, without step 2, only survives a single `fastboot continue` and reverts after a real reboot — this cost significant time to figure out.)
@@ -175,6 +175,10 @@ Not included: any Hisense/Qualcomm-copyrighted binaries (stock or patched APK, `
 - [Hisense A6L firmware support — RomProvider](https://romprovider.com/hisense-a6l-firmware-support/)
 - [Hisense A6L HLTE730T — FindROM.info](https://www.findrom.info/hisense-a6l-hlte730t/)
 - [fans.hisense.com official forum thread](http://fans.hisense.com/thread-172687-1-1.html) — the most authoritative source (it's Hisense's own community site), but downloads there are gated behind a forum-account reply ("回复可见"); worth doing if you can, since third-party mirrors of this device's firmware are otherwise scarce.
+
+**Flashing tools:**
+- [`aimindseye/hisense-a9`](https://github.com/aimindseye/hisense-a9) — source of the patched `fastboot` binary that actually recognizes the `Hisense` OEM subcommand (see [Unlock steps](#unlock-steps)). It's for a different Hisense model, but the binary itself is OEM-specific, not model-specific.
+- [`bkerler/edl`](https://github.com/bkerler/edl) — source of the generic SDM660 Firehose loader that actually worked for EDL (see the loader discussion in [Brick recovery](#brick-recovery-edl-and-a-no-teardown-trigger-cable)).
 
 **MCFG / `mcfg_sw.mbn` tooling and format references:**
 - [`sbaresearch/mbn-mcfg-tools`](https://github.com/sbaresearch/mbn-mcfg-tools) — the extract/repack/hash-check tool used throughout this repo (see `patches/mbn-mcfg-tools-windows-path-fix.patch`)

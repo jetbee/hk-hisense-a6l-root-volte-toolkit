@@ -44,7 +44,7 @@ Snapdragon 660 (SDM660) 搭載で、前面が通常のカラーLCD、背面が�
 
 ### アンロック手順
 
-1. OEMの`fastboot Hisense unlock`コマンドで一時アンロック。**素の platform-tools の`fastboot`は`Hisense`というOEMサブコマンドを認識しません** — これに対応したカスタム/パッチ済みfastbootバイナリが必要です（Hisense専用fastbootツールを検索してください。本リポジトリでは再配布していません）。
+1. OEMの`fastboot Hisense unlock`コマンドで一時アンロック。**素の platform-tools の`fastboot`は`Hisense`というOEMサブコマンドを認識しません** — これに対応したカスタム/パッチ済みfastbootバイナリが必要です。私たちが実際に使えたのは、[`aimindseye/hisense-a9`](https://github.com/aimindseye/hisense-a9)（別のHisense機種向けだが関連するリポジトリ）に貼られているGoogle Driveリンク経由のものでした——このパッチ済みfastbootバイナリ自体は機種固有ではなくOEM（Hisense）固有のものです。本リポジトリでは再配布していないので、自分でリンクを見つけて確認するか、リンクが切れていたら他のHisense専用fastbootツールを探してください。
 2. `fastboot erase avb_custom_key` — これが実際に不可逆な本アンロック処理です。この端末では、これ単体ではuserdataの消去も確認ダイアログの表示も**行われません**（他機種向けの一部ガイドとは異なる挙動）——自分で`fastboot erase userdata`も実行するか、結果として出る「Decryption Unsuccessful」のリカバリー画面から手動で初期化する覚悟をしてください。
 3. Magiskでパッチした`boot.img`と、`--disable-verity --disable-verification`付きでフラッシュした`vbmeta.img`を書き込みます。**パッチするのは、ネット上のファームウェア配布パッケージに入っている`boot.img`ではなく、自分の端末からEDLで吸い出した`boot.img`にしてください。** この端末にはリージョン/バージョン違いのファームウェアが複数出回っており、公開されている`boot.img`が自分の実機の中身と一致しない、ということが普通に起こります。違うものをMagiskパッチしてしまうと、下のリカバリー節のお世話になる羽目になりがちです。
 4. これで本当のコールドブートを経ても永続します（手順2を省いた一時アンロックのみだと、`fastboot continue`一回分しか有効にならず、本当の再起動で元に戻ります — ここの見極めにかなり時間を使いました）。
@@ -175,6 +175,10 @@ Windows側で`Diagnostics Interface (COMx)`というデバイスが列挙され�
 - [Hisense A6L firmware support — RomProvider](https://romprovider.com/hisense-a6l-firmware-support/)
 - [Hisense A6L HLTE730T — FindROM.info](https://www.findrom.info/hisense-a6l-hlte730t/)
 - [fans.hisense.com 公式フォーラムスレッド](http://fans.hisense.com/thread-172687-1-1.html) — 一番権威のあるソース（Hisense自身のコミュニティサイト）だが、ダウンロードはフォーラムアカウントでの返信必須（「回复可见」）で塞がれている。可能ならやる価値あり——この端末のファームウェアのサードパーティミラーは他にあまり出回っていない。
+
+**書き込みツール:**
+- [`aimindseye/hisense-a9`](https://github.com/aimindseye/hisense-a9) — `Hisense`というOEMサブコマンドを実際に認識するパッチ済み`fastboot`バイナリの入手元（[アンロック手順](#アンロック手順)参照）。別のHisense機種向けだが、このバイナリ自体は機種固有ではなくOEM固有のもの。
+- [`bkerler/edl`](https://github.com/bkerler/edl) — EDLで実際に動いた汎用SDM660用Firehoseローダーの入手元（[ブリック復旧](#ブリック復旧-edlと開腹不要のトリガーケーブル)節のローダーの話を参照）。
 
 **MCFG / `mcfg_sw.mbn` ツールとフォーマット関連の参考資料:**
 - [`sbaresearch/mbn-mcfg-tools`](https://github.com/sbaresearch/mbn-mcfg-tools) — 本リポジトリ全体で使っているextract/repack/ハッシュ検証ツール（`patches/mbn-mcfg-tools-windows-path-fix.patch`参照）
